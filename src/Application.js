@@ -46,7 +46,10 @@ module.exports = class Application extends EventEmitter {
 
     loadServices(svcList) {
         Object.keys(svcList).forEach(key => {
-            const sw = require(path.join(this.Env.appPath, svcList[key].service));
+            // if service is of type string, then require
+            // otherwise, assume it is a type
+            const sw = (typeof svcList[key].service === "string") ? require(path.join(this.Env.appPath, svcList[key].service)) : svcList[key].service;
+            //const sw = require(path.join(this.Env.appPath, svcList[key].service));
             this.Services[key] = new sw(this, svcList[key].config);
         });
 

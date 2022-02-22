@@ -1,7 +1,8 @@
-const Application = require('./src/Application');
-const Plugin = require('./src/Plugin');
 
 module.exports = {
-    Application,
-    Plugin
+    Application: require('./src/Application'),
+    Plugin: require('./src/Plugin'),
+
+    ServiceWrapper: require('./src/services/ServiceWrapper'),
+    WebService: require('./src/services/WebService')
 };
