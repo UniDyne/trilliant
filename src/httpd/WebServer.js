@@ -6,7 +6,6 @@ const http = require("http"),
     cluster = require("cluster");
 
 const EventEmitter = require("events");
-const Utils = require("./Utils");
 
 const CONFIG_DEFAULTS = require('./DefaultConfig');
 const MIME_TYPES = require('./MimeTypes');
@@ -15,6 +14,10 @@ const { RedirectProxy } = require("./RedirectProxy");
 /***
     HTTP Helper Methods
 ***/
+
+// convenience method
+function loadConfigFile(filename) { return JSON.parse(fs.readFileSync(filename)); }
+
 
 function requestHandler(request, response) {
     var uri = url.parse(request.url, true);
@@ -63,7 +66,7 @@ function loadConfiguration(conf) {
 
     if(typeof conf === 'string') {
         dir = path.dirname(conf);
-        conf = Utils.loadConfigFile(conf);
+        conf = loadConfigFile(conf);
     }
 
     if(conf.hasOwnProperty('rootpath'))
@@ -79,7 +82,7 @@ function loadConfiguration(conf) {
 
     if(conf.hasOwnProperty('mimetypes') && typeof conf.mimetypes === 'string') try {
         // merge mime type confiuration
-        Object.assign(MIME_TYPES, Utils.loadConfigFile(path.join(dir, conf.mimetypes)));
+        Object.assign(MIME_TYPES, loadConfigFile(path.join(dir, conf.mimetypes)));
         
     } catch(e) { console.error(e); }
 
