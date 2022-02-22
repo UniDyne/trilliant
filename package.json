@@ -1,8 +1,12 @@
 {
     "name": "trilliant",
     "version": "0.0.1",
-    "main": "main.js",
+    "main": "index.js",
     "dependencies": {
         
+    },
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/unidyne/trilliant.git"
     }
 }
