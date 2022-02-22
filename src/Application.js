@@ -8,7 +8,7 @@ const PlugManager = require("./PlugManager");
 const { Output } = require("unidyne-utils");
 
 function initEnv() {
-    const appPath = path.dirname(require.main.filename || process.mainModule.filename);
+    const appPath = path.dirname(require.main.filename);
     /* load manifest */
     const appName = (function() {
         let name = "app";

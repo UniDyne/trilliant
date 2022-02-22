@@ -6,45 +6,65 @@
  fs = require("fs"),
  path = require("path");
 
+// change template cache to have max size, use as queue
+const TMPL_CACHE_SIZE = 8;
+const CacheEntries = {};
+const CacheIndex = [];
 
-const TmplCache = {};
+function checkCache(id) {
+    if(CacheEntries[id]) {
+        var i = CacheIndex.findIndex(e => e==id);
+        if(i >= 0) CacheIndex.splice(i, 1);
+        CacheIndex.push(id);
+        return CacheEntries[id];
+    } else return null; 
+}
+
+function setCache(id, entry) {
+    CacheEntries[id] = entry;
+    CacheIndex.push(id);
+    while(CacheIndex.length > TMPL_CACHE_SIZE) {
+        var id = CacheIndex.shift();
+        delete CacheEntries[id];
+    }
+    return entry;
+}
+
 
 
 function processSegment(tmpl, scope) {
  var output = tmpl;
 
+ // scope evaluator
+ var scopeEval = str => str.replace(/^\s+|\s+$/g,'').split('.').reduce((o,i) => o[i], scope);
+
  // iterators
- function iter(w, g, t) {
-     var out = "";
-     var x = g.split('.').reduce((o,i) => o[i], scope);
-     
-     if(x.length) {
-         for(var i = 0; i < x.length; i++) {
-             out += processSegment(t, x[i]);
-         }
-     } else {
-         for(var i in x)
+ output = output.replace(/\{%EACH ([A-Za-z0-9_\.]*)\}(.*?)\{%ENDEACH\}/smg, (w,g,t) => {
+    var out = "";
+    var x = scopeEval(g);
+
+    if(x.length) {
+        for(var i = 0; i < x.length; i++) {
+            out += processSegment(t, x[i]);
+        }
+    } else {
+        for(var i in x)
              out += processSegment(t, i);
-     }
-     return out;
- }
- output = output.replace(/\{%EACH ([A-Za-z0-9_\.]*)\}(.*?)\{%ENDEACH\}/smg, iter);
+    }
+    return out;
+ });
 
  // conditional
- function ifblock(w,g,t) {
-     var out = "";
-     var x = g.split('.').reduce((o,i) => o[i], scope);
-     
-     if(x) out += processSegment(t, scope);
-
-     return out;
- }
- output = output.replace(/\{%IF ([A-Za-z0-9_\.]*)\}(.*?)\{%ENDIF\}/smg, ifblock);
- 
+ output = output.replace(/\{%IF ([A-Za-z0-9_\.]*)\}(.*?)\{%ENDIF\}/smg, (w,g,t) => {
+    var out = "";
+    var x = scopeEval(g);
+    if(x) out += processSegment(t, scope);
+    return out;
+ });
  
 
  // variables
- output = output.replace(/\{\{([A-Za-z0-9_\.]*)\}\}/g, (w,g) => (g.replace(/^\s+|\s+$/g,'').split('.').reduce((o,i)=>o[i],scope) || w));
+ output = output.replace(/\{\{([A-Za-z0-9_\.]*)\}\}/g, (w,g) => scopeEval(g) || w);
 
  return output;
 }
@@ -58,8 +78,8 @@ class Template {
         this.dirname = path.dirname(tmplstr);
 
         this.tmpl = fs.readFileSync(tmplstr.substr(1), 'utf8');
-
-        if(!TmplCache.hasOwnProperty(filename)) TmplCache[filename] = this;
+        
+        setCache(filename, this);
     } else {
         this.tmpl = tmplstr;
 
@@ -72,12 +92,12 @@ class Template {
 
  process(scope) {
      // first process all includes...
-     function incl(w,g) {
-         var filename = path.join(this.dirname, g.replace(/^\s+|\s+$/g,''));
-         var tmpl = TmplCache.hasOwnProperty(filename) ? TmplCache[filename] : new Template(`:${filename}`);
-         return tmpl.process(scope);
-     }
-     var output = this.tmpl.replace(/\{%([A-Za-z0-9_\.]*)%\}/g, incl);
+     var output = this.tmpl.replace(/\{%([A-Za-z0-9_\.]*)%\}/g, (w,g) => {
+        var filename = path.join(this.dirname, g.replace(/^\s+|\s+$/g,''));
+        var tmpl = checkCache(filename);
+        if(tmpl == null) tmpl = new Template(`:${filename}`);
+        return tmpl.process(scope);
+     });
 
      output = processSegment(output, scope);
      
@@ -90,7 +110,8 @@ module.exports = {
     process: function(file, scope) {
         var dirname = (App && App.Env) ? App.Env.appPath : __dirname;
         var filename = path.join(dirname, "tmpl", file);
-        var tmpl = TmplCache.hasOwnProperty(filename) ? TmplCache[filename] : new Template(filename);
+        var tmpl = checkCache(filename);
+        if(tmpl == null) tmpl = new Template(`:${filename}`);
         return tmpl.process(scope);
     }
 }
