@@ -120,6 +120,9 @@ function loadExtensions(extlist) {
 }
 
 function getExtInstance(self, extPath, config) {
+    // if starts with #, use internal extension
+    if(extPath.substr(0,1) == "#") extPath = `./extensions/${extPath.substr(1)}`;
+    
     const {WebExtension} = require(extPath);
     return new WebExtension(self, config);
 }
@@ -129,8 +132,6 @@ module.exports.WebServer = class extends EventEmitter {
     constructor(conf) {
         super();
 
-        var dir = __dirname;
-        
         this.routes = [];
         this.virtualPaths = {};
 
