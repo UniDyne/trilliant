@@ -3,7 +3,7 @@
     "version": "0.0.1",
     "main": "index.js",
     "dependencies": {
-        
+        "node-sqlserver": "git+https://github.com/unidyne/node-sqlserver.git"
     },
     "repository": {
         "type": "git",
