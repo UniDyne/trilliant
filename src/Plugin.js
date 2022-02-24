@@ -51,7 +51,11 @@ module.exports = class Plugin extends EventEmitter {
 
         // config...
 
+        
+        initEvents(data);
+    }
 
+    initEvents(data) {
         // register internal events
         if(data.events) {
             var k = Object.keys(data.events);
