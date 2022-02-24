@@ -4,5 +4,6 @@ module.exports = {
     Plugin: require('./src/Plugin'),
 
     ServiceWrapper: require('./src/services/ServiceWrapper'),
-    WebService: require('./src/services/WebService')
+    WebService: require('./src/services/WebService'),
+    SQLService: require('./src/services/SQLService')
 };
