@@ -2,7 +2,8 @@ const crypto = require("crypto"),
     path = require('path'),
     fs = require('fs');
 
-const Util = require('./Utils');
+const {atob, btoa} = require('../util/Base64');
+const createUUID = require('../util/CreateUUID');
 
 /*================================================================
 	RFC7519 - JWT
@@ -34,15 +35,15 @@ module.exports = {
         var head = { typ: 'JWT', alg: 'HS256' };
         var ts = ((new Date()).getTime()/1000) >> 0;
         var body = Object.assign(claims, {
-            jti: Util.createUUID(),
+            jti: createUUID(),
             iat: ts,
             exp: ts + (8 * 60 * 60), // 8 hours
             sub: username
         });
         
         var jwt = [];
-        jwt.push(Util.btoa(JSON.stringify(head)));
-        jwt.push(Util.btoa(JSON.stringify(body)));
+        jwt.push(btoa(JSON.stringify(head)));
+        jwt.push(btoa(JSON.stringify(body)));
         
         // create signature
         var sign = crypto.createSign('SHA256');
@@ -58,7 +59,7 @@ module.exports = {
         
         if(jwt.length != 3) return false;
         
-        var body = JSON.parse(Util.atob(jwt[1]));
+        var body = JSON.parse(atob(jwt[1]));
         
         // confirm timestamp
         var ts = ((new Date()).getTime()/1000) >> 0;
@@ -72,5 +73,5 @@ module.exports = {
         return true;
     },
 
-    read: function(jwt) { return JSON.parse(Util.atob(jwt.split('.')[1])); }
+    read: function(jwt) { return JSON.parse(atob(jwt.split('.')[1])); }
 };
