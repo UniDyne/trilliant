@@ -52,7 +52,7 @@ module.exports = class Plugin extends EventEmitter {
         // config...
 
         
-        initEvents(data);
+        this.initEvents(data);
     }
 
     initEvents(data) {
