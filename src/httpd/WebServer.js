@@ -24,6 +24,7 @@ function requestHandler(request, response) {
     var pathname = decodeURI(uri.pathname);
     var query = uri.query;
     
+    response.getMimeType = getMimeType;
     response.setRequest(request);
     request.setResponse(response);
     
@@ -125,6 +126,11 @@ function getExtInstance(self, extPath, config) {
     
     const {WebExtension} = require(extPath);
     return new WebExtension(self, config);
+}
+
+function getMimeType(filename) {
+    var ext = path.extname(filename).replace(/^\./,'');
+    return MIME_TYPES.hasOwnProperty(ext) ? MIME_TYPES[ext] : "application/octet-stream";
 }
 
 module.exports.WebServer = class extends EventEmitter {

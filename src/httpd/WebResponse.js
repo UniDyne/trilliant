@@ -1,7 +1,6 @@
 const http = require('http'),
     fs = require('fs'),
-    path = require('path'),
-    Utils = require('./Utils');
+    path = require('path');
 
 const HTTP_MESSAGES = require('./HttpMessages');
 const MIME_TYPES = require('./MimeTypes');
@@ -42,7 +41,8 @@ class WebResponse extends http.ServerResponse {
 
             //#! move ETags...?
             // Need to hook something here... expand ETags to non-files...
-            //var etag = Utils.calcETag(filename, stat);
+            // use extension?
+            //var etag = calcETag(filename, stat);
             //this.setHeader("ETag", etag);
             //this.setHeader("Cache-Control", `max-age=${this.Config.cacheAge}`);
 
@@ -50,7 +50,7 @@ class WebResponse extends http.ServerResponse {
 
             var statusOK = 200, start, end;
             var headers = {
-                "Content-Type": Utils.getMimeType(filename),
+                "Content-Type": this.getMimeType(filename),
                 "Content-Length": stat.size,
                 "Accept-Ranges": "bytes"
             };
