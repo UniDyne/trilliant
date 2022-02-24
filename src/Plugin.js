@@ -36,7 +36,7 @@ module.exports = class Plugin extends EventEmitter {
     constructor(data) {
         super();
         if(data === undefined) data = {};
-        data.home = getSubclassDir();
+        if(data.home === undefined) data.home = getSubclassDir();
         console.log(this.constructor.name);
         PlugDataMap.set(this, data);
 

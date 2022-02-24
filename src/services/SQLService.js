@@ -23,7 +23,7 @@ module.exports = class SQLService extends ServiceWrapper {
         if(typeof data === "string")
             q = JSON.parse( fs.readFileSync(path.join(plug.homeDir, data)) );
         else q = data;
-
+        
         plug.Queries = this.SQLPool.loadQueries(q, plug.homeDir);
     }
 }
