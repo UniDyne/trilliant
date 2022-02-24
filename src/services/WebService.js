@@ -1,5 +1,6 @@
 
-const ServiceWrapper = require('./ServiceWrapper'),
+const path = require("path"),
+    ServiceWrapper = require('./ServiceWrapper'),
     WebServer = require('../httpd/WebServer');
 
 module.exports = class WebService extends ServiceWrapper {
