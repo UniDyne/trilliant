@@ -1,6 +1,6 @@
 const hexDigits = "0123456789abcdef";
 
-module.export = function () {
+module.exports = function () {
     var s = [];
     for (var i = 0; i < 36; i++) {
         s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
