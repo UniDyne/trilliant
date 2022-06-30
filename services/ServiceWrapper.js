@@ -1,7 +1,8 @@
-// Dummy interface for services.
-// Extend this to implement a new service.
-
-module.exports = class ServiceWrapper {
+/**
+    Dummy interface for services.
+    Extend this to implement a new service.
+*/
+export class ServiceWrapper {
     constructor(app, config) {
         this.App = app;
     }

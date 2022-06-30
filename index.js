@@ -3,10 +3,7 @@ module.exports = {
     Application: require('./src/Application'),
     Plugin: require('./src/Plugin'),
 
-    ServiceWrapper: require('./src/services/ServiceWrapper'),
-    WebService: require('./src/services/WebService'),
-    SQLService: require('./src/services/SQLService'),
-
-
-    JWT: require('./src/httpd/RFC7519.js')
+    ServiceWrapper: require('./services/ServiceWrapper'),
+    WebService: require('./services/WebService'),
+    SQLService: require('./services/SQLService')
 };
