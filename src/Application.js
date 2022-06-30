@@ -2,9 +2,9 @@ const fs = require("fs"),
     path = require("path"),
     EventEmitter = require("events");
 
-const Configuration = require("./util/Configuration");
+const Configuration = require("../util/Configuration");
 const PlugManager = require("./PlugManager");
-const Logging = require("./util/Logging");
+const Logging = require("../util/Logging");
 
 function initEnv() {
     const appPath = path.dirname(require.main.filename);

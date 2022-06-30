@@ -1,7 +1,7 @@
 const fs = require("fs"),
     path = require("path");
 
-const Logging = require("./util/Logging");
+const Logging = require("../util/Logging");
 
 
 module.exports = class PlugManager {
