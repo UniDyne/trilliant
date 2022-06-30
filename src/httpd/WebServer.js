@@ -121,8 +121,12 @@ function loadExtensions(extlist) {
 }
 
 function getExtInstance(self, extPath, config) {
+    // fix for app-relative extension
+    if(extPath.substr(0,2) == "./") extPath = path.join(process.cwd(), extPath);
+
     // if starts with #, use internal extension
     if(extPath.substr(0,1) == "#") extPath = `./extensions/${extPath.substr(1)}`;
+    
     
     const {WebExtension} = require(extPath);
     return new WebExtension(self, config);
