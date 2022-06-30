@@ -1,7 +1,7 @@
 const fs = require("fs"),
     path = require("path");
 
-const { Output } = require("unidyne-utils");
+const Logging = require("./util/Logging");
 
 
 module.exports = class PlugManager {
@@ -28,7 +28,7 @@ module.exports = class PlugManager {
                 const plugPkg = JSON.parse(fs.readFileSync(path.join(this.plugPath, files[i], "package.json"), "utf8"));
 
                 if(plugPkg.plugdef === undefined) {
-                    Output.warn(`Invalid plugin: ${files[i]}`);
+                    Logging.warn(`Invalid plugin: ${files[i]}`);
                     continue;
                 }
 
@@ -54,7 +54,7 @@ module.exports = class PlugManager {
                     this._plugs[files[i]].updated = true; // ?? consume this...
                 }
             } catch(e) {
-                Output.error(`Could not load plugin: ${files[i]}`, e);
+                Logging.error(`Could not load plugin: ${files[i]}`, e);
             }
 
             this.App.Config.save();
@@ -72,11 +72,11 @@ module.exports = class PlugManager {
                 this.plugMap[i] = j++;
             } catch(e) {
                 this._plugs[i].enabled = false;
-                Output.error(`Plugin ${i} could not be loaded and has been disabled.`, e);
+                Logging.error(`Plugin ${i} could not be loaded and has been disabled.`, e);
             }
         }
 
-        Output.debug('PlugMap', this.plugMap);
+        Logging.debug('PlugMap', this.plugMap);
     }
 
     start() {

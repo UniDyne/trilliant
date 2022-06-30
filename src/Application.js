@@ -4,8 +4,7 @@ const fs = require("fs"),
 
 const Configuration = require("./util/Configuration");
 const PlugManager = require("./PlugManager");
-
-const { Output } = require("unidyne-utils");
+const Logging = require("./util/Logging");
 
 function initEnv() {
     const appPath = path.dirname(require.main.filename);
@@ -33,7 +32,7 @@ module.exports = class Application extends EventEmitter {
 
         global.App = this;
 
-        Output.activateDebugHook();
+        Logging.activateDebugHook();
 
         this.Env = initEnv();
         this.Config = new Configuration(this, this.Env.cfgPath, defaults);
