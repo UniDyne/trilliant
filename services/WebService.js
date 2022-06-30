@@ -3,7 +3,7 @@ const path = require("path"),
     {ServiceWrapper} = require('./ServiceWrapper'),
     {WebServer} = require('../httpd/WebServer');
 
-export class WebService extends ServiceWrapper {
+module.exports = class WebService extends ServiceWrapper {
     constructor(app, config) {
         super(app, config);
 
