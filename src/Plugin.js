@@ -32,6 +32,23 @@ function attachServices(app, plug, servspec) {
     });
 }
 
+// removes reserved arguments
+function reservedArgFilter(descriptor, args) {
+    Object.keys(args).filter( k => (/^_/).test(k) ).forEach( k => delete args[k] );
+    return args;
+}
+
+// defaults the pagination parameters
+function paginationArgFilter(descriptor, args) {
+    if(!args.pages) args.pages = descriptor.pages || {};
+    if(!args.pages.count) args.pages.count = 20;
+    if(!args.pages.num) args.pages.num = 1;
+    return args;
+}
+
+function filterArgs(descriptor, args) { return descriptor.argFilters.reduce((pv, cv) => cv(descriptor, pv), args); }
+
+
 module.exports = class Plugin extends EventEmitter {
     constructor(data) {
         super();
@@ -52,20 +69,60 @@ module.exports = class Plugin extends EventEmitter {
         // config...
 
         
-        this.initEvents(data);
+        if(data.events) this.initEvents(data);
     }
 
     initEvents(data) {
-        // register internal events
-        if(data.events) {
-            var k = Object.keys(data.events);
-			for(var i = 0, L = k.length; i < L; i++) {
-				if(typeof data.events[k[i]] == "function")
-					this.on(k[i], data.events[k[i]].bind(this));
-				else
-					this.on(k[i], this[data.events[k[i]]]);
-			}
+        var k = Object.keys(data.events);
+        for(let i = 0, L = k.length; i < L; i++) {
+
+            let descriptor = { id: k[i], fn: ()=>null };
+            let spec = data.events[k[i]];
+
+            // object may contain metadata used by subclass
+            switch(typeof spec) {
+                case "object":
+                    Object.assign(descriptor, spec);
+                    break;
+                case "function":
+                    descriptor.fn = spec;
+                    break;
+                case "string":
+                    if(typeof this[spec] == "function")
+                        descriptor.fn = this[spec];
+                    break;
+            }
+
+            // arg filters are only set ONCE
+            descriptor.argFilters = getArgFilters();
+
+            // wrapping event allows subclass
+            // to do preprocessing and other admin prior to execution
+            // wrapping only happens ONCE
+            descriptor.fn = this.wrapEvent(descriptor, descriptor.fn);
+
+            // double wrapping here ensures that args are filtered
+            // before event is called
+            this.on(descriptor.id, ( function (args, callback) {
+                return descriptor.fn.apply(this, [filterArgs(descriptor,args), callback]);
+            } ).bind(this) );
         }
+    }
+    
+    // return a bound function for the event
+    // override this to perform additional setups
+    wrapEvent(descriptor, fn) {
+        return (function(args, callback) {
+            return fn.apply(this, (args, callback));
+        }).bind(this);
+    }
+
+    // override this for additional filters
+    // call super.getArgFilters() to get the defaults
+    getArgFilters(descriptor) {
+        let argFilters = [reservedArgFilter];
+        if(descriptor.paginate) argFilters.push(paginationArgFilter);
+        return argFilters;
     }
 
     getPlugData() { return PlugDataMap.get(this); }
