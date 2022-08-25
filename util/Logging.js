@@ -73,6 +73,16 @@ function activateDebugHook() {
 
         // add process termination on hang??
     });
+
+    process.on('unhandledRejection', function(err) {
+        if(typeof err == 'string')
+            return module.exports.debug(err);
+        if(err.hasOwnProperty('message'))
+            return module.exports.debug(err.message, err);
+        return module.exports.debug('Unknown', err);
+
+        // add process termination on hang??
+    });
 }
 
 
@@ -105,8 +115,6 @@ module.exports = {
         console.log(data);
         logToFile('DEBUG', message, data);
     },
-
-
-    
+        
     activateDebugHook: activateDebugHook
 };
