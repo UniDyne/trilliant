@@ -70,19 +70,27 @@ function activateDebugHook() {
         if(err.hasOwnProperty('message'))
             return module.exports.debug(err.message, err);
         return module.exports.debug('Unknown', err);
-
-        // add process termination on hang??
     });
 
-    process.on('unhandledRejection', function(err) {
-        if(typeof err == 'string')
-            return module.exports.debug(err);
+    process.on('unhandledRejection', function(reason) {
+        if(typeof reason == 'string')
+            return module.exports.debug(reason);
         if(err.hasOwnProperty('message'))
-            return module.exports.debug(err.message, err);
-        return module.exports.debug('Unknown', err);
-
-        // add process termination on hang??
+            return module.exports.debug(reason.message, reason);
+        return module.exports.debug('Unknown', reason);
     });
+
+    process.on('multipleResolves', function(type, promise, reason) {
+        return module.exports.debug(`Multiple resolves of type ${type}`, reason);
+    });
+}
+
+function dumpActiveHandles() {
+    return module.exports.debug("Dumping active handles.", process._getActiveHandles());
+}
+
+function dumpActiveRequests() {
+    return module.exports.debug("Dumping active requests.", process._getActiveRequests());
 }
 
 
@@ -116,5 +124,7 @@ module.exports = {
         logToFile('DEBUG', message, data);
     },
         
-    activateDebugHook: activateDebugHook
+    activateDebugHook: activateDebugHook,
+    dumpActiveHandles: dumpActiveHandles,
+    dumpActiveRequests: dumpActiveRequests
 };
