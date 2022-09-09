@@ -1,6 +1,6 @@
-const fs = require('node:fs');
-const path = require('node:path');
-const crypto = require('node:crypto').webcrypto;
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
 
 const { Cache } = require('../../lib/Cache');
 
@@ -60,6 +60,8 @@ module.exports.WebExtension = class {
         webserver.on('requestEnd', this.saveSessionState);
 
         this.SessionCache = new Cache(32); // move to config...
+
+        this.SessionCache.on('deref', (id, entry) => entry.store());
 
         // move to config
         Object.defineProperty(this, 'COOKIE_NAME', {
