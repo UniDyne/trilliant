@@ -15,3 +15,7 @@ This extension is used to expose a set of methods to the web through a 'channel'
 ## Cookies
 
 This adds cookie functionality to the web server by hooking the request and response events.
+
+## Sessions
+
+Adds session functionality and a small in-memory session cache. Session storage is on disk.
