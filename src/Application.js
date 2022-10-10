@@ -7,7 +7,7 @@ const PlugManager = require("./PlugManager");
 const Logging = require("../util/Logging");
 
 function initEnv() {
-    const appPath = path.dirname(require.main.filename);
+    const appPath = process.cwd();//path.dirname(require.main.filename);
     /* load manifest */
     const appName = (function() {
         let name = "app";
@@ -45,11 +45,26 @@ module.exports = class Application extends EventEmitter {
 
     loadServices(svcList) {
         Object.keys(svcList).forEach(key => {
+            let sw;
+
             // if service is of type string, then require
             // otherwise, assume it is a type
-            const sw = (typeof svcList[key].service === "string") ? require(path.join(this.Env.appPath, svcList[key].service)) : svcList[key].service;
-            //const sw = require(path.join(this.Env.appPath, svcList[key].service));
-            this.Services[key] = new sw(this, svcList[key].config);
+            try {
+                if(typeof svcList[key].service === "string") {
+                    if(svcList[key].service.startsWith("./")) {
+                        sw = require(path.join(this.Env.appPath, svcList[key].service)); // it's a module in the app
+                    } else { // it's an npm package
+                        // compliant packages *should* expose a Service class...
+                        let pkg = require(svcList[key].service);
+                        sw = pkg.TrilliantService ? pkg.TrilliantService : pkg;
+                    }
+                } else sw = svcList[key].service; // it's a class
+            } catch(e) {
+                console.log(`Unable to load service "${key}".`);
+            }
+            // all services must accept App, Config arguments
+            try { this.Services[key] = new sw(this, svcList[key].config); }
+            catch(e) { console.log(`Unable to instantiate service "${key}".`); }
         });
 
         Object.values(this.Services).forEach(svc => { if(typeof svc.start === "function") svc.start(); });

@@ -75,7 +75,7 @@ function activateDebugHook() {
     process.on('unhandledRejection', function(reason) {
         if(typeof reason == 'string')
             return module.exports.debug(reason);
-        if(err.hasOwnProperty('message'))
+        if(reason.hasOwnProperty('message'))
             return module.exports.debug(reason.message, reason);
         return module.exports.debug('Unknown', reason);
     });

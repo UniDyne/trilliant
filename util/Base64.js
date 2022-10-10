@@ -11,7 +11,6 @@ module.exports = {
     },
     
     getFileBase64: function (filePath) {
-		const data = fs.readFileSync(filePath);
-		return data.toString('base64');
+		return fs.readFileSync(filePath).toString('base64');
     }
-}
+};
