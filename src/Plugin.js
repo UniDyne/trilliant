@@ -94,7 +94,7 @@ module.exports = class Plugin extends EventEmitter {
             }
 
             // arg filters are only set ONCE
-            descriptor.argFilters = getArgFilters();
+            descriptor.argFilters = this.getArgFilters(descriptor);
 
             // wrapping event allows subclass
             // to do preprocessing and other admin prior to execution
