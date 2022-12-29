@@ -113,7 +113,7 @@ module.exports = class Plugin extends EventEmitter {
     // override this to perform additional setups
     wrapEvent(descriptor, fn) {
         return (function(args, callback) {
-            return fn.apply(this, (args, callback));
+            return fn.apply(this, [args, callback]);
         }).bind(this);
     }
 
