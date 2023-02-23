@@ -99,12 +99,13 @@ module.exports = class Plugin extends EventEmitter {
             // wrapping event allows subclass
             // to do preprocessing and other admin prior to execution
             // wrapping only happens ONCE
-            descriptor.fn = this.wrapEvent(descriptor, descriptor.fn);
+            // descriptor.fn = this.wrapEvent(descriptor, descriptor.fn);
+            let wrappedFn = this.wrapEvent(descriptor, descriptor.fn);
 
             // double wrapping here ensures that args are filtered
             // before event is called
             this.on(descriptor.id, ( function (args, callback) {
-                return descriptor.fn.apply(this, [filterArgs(descriptor,args), callback]);
+                return wrappedFn.apply(this, [filterArgs(descriptor,args), callback]);
             } ).bind(this) );
         }
     }
