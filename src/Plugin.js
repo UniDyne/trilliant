@@ -40,9 +40,10 @@ function reservedArgFilter(descriptor, args) {
 
 // defaults the pagination parameters
 function paginationArgFilter(descriptor, args) {
-    if(!args.pages) args.pages = descriptor.pages || {};
-    if(!args.pages.count) args.pages.count = 20;
-    if(!args.pages.num) args.pages.num = 1;
+    args.pages = Object.assign({}, descriptor.pages, args.pages ?? {num: 1});
+    
+    if(!args.pages.count || args.pages.count <= 0) args.pages.count = 20;
+    if(!args.pages.num || args.pages.num <= 0) args.pages.num = 1;
     return args;
 }
 
@@ -146,7 +147,10 @@ module.exports = class Plugin extends EventEmitter {
     // call super.getArgFilters() to get the defaults
     getArgFilters(descriptor) {
         let argFilters = [reservedArgFilter];
-        if(descriptor.paginate) argFilters.push(paginationArgFilter);
+        if(descriptor.paginate) {
+            descriptor.pages ??= { count: 20 };
+            argFilters.push(paginationArgFilter);
+        }
         return argFilters;
     }
 
