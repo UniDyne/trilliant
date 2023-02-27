@@ -46,7 +46,27 @@ function paginationArgFilter(descriptor, args) {
     return args;
 }
 
+function paginationResultFilter(descriptor, args) {
+    // expecting first arg to be list of records
+    // second arg should be pagination object
+
+    if(args.length > 1 && typeof args[1] == 'object' && typeof args[0] == 'array') {
+        // copy total to pagination object
+        args[1].total = args[0].length > 0 ? args[0].page_total : 0;
+        
+        // remove pagination metadata from result array
+        args[0].forEach(v => {
+            delete v.page_total;
+            delete v.page_row;
+        });
+    }
+
+    return args;
+}
+
 function filterArgs(descriptor, args) { return descriptor.argFilters.reduce((pv, cv) => cv(descriptor, pv), args); }
+
+function filterResult(descriptor, args) { return descriptor.resultFilters.reduce((pv, cv) => cv(descriptor, pv), args); }
 
 
 module.exports = class Plugin extends EventEmitter {
@@ -95,6 +115,7 @@ module.exports = class Plugin extends EventEmitter {
 
             // arg filters are only set ONCE
             descriptor.argFilters = this.getArgFilters(descriptor);
+            descriptor.resultFilters = this.getResultFilters(descriptor);
 
             // wrapping event allows subclass
             // to do preprocessing and other admin prior to execution
@@ -105,7 +126,10 @@ module.exports = class Plugin extends EventEmitter {
             // double wrapping here ensures that args are filtered
             // before event is called
             this.on(descriptor.id, ( function (args, callback) {
-                return wrappedFn.apply(this, [filterArgs(descriptor,args), callback]);
+                return wrappedFn.apply(this, [filterArgs(descriptor,args), (...result) => {
+                    result = filterResult(descriptor, result);
+                    return callback.apply(this, result);
+                }]);
             } ).bind(this) );
         }
     }
@@ -124,6 +148,12 @@ module.exports = class Plugin extends EventEmitter {
         let argFilters = [reservedArgFilter];
         if(descriptor.paginate) argFilters.push(paginationArgFilter);
         return argFilters;
+    }
+
+    getResultFilters(descriptor) {
+        let resultFilters = [];
+        if(descriptor.paginate) resultFilters.push(paginationResultFilter);
+        return resultFilters;
     }
 
     getPlugData() { return PlugDataMap.get(this); }
