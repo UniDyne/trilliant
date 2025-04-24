@@ -1,6 +1,8 @@
 /**
     Dummy interface for services.
     Extend this to implement a new service.
+
+    @deprecated
 */
 module.exports = class ServiceWrapper {
     constructor(app, config) {

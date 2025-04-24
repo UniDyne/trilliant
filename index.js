@@ -7,6 +7,7 @@ const { JWT } = require('./lib/JWT');
 module.exports = {
     Application: require('./src/Application'),
     Plugin: require('./src/Plugin'),
+    Service: require('./src/Service'),
     ServiceWrapper: require('./src/ServiceWrapper'),
 
     JWT: JWT,
