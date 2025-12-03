@@ -17,7 +17,7 @@ const MESG_NOLOGIN = -1,
 /* Messages */
 /* TODO: Make this configurable w/ i18n */
 const MESSAGES = new Map([
-    [UNKNOWN_ERROR, "Unknown error."]
+    [UNKNOWN_ERROR, "Unknown error."],
     [MESG_NOLOGIN, "Not logged in."],
     [MESG_NOTAUTH, "Not authorized."]
 ]);
