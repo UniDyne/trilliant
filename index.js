@@ -2,17 +2,26 @@ const { Cache } = require('./lib/Cache');
 const { ExpirationCache } = require('./lib/ExpirationCache');
 const { DiskCache } = require('./lib/DiskCache');
 const { JWT } = require('./lib/JWT');
+const Application = require('./src/Application');
+const Plugin = require('./src/Plugin');
+const { APIPlugin, MessageEnvelope } = require('./src/APIPlugin');
 
+const Service = require('./src/Service');
+const ServiceWrapper = require('./src/ServiceWrapper');
 
 module.exports = {
-    Application: require('./src/Application'),
-    Plugin: require('./src/Plugin'),
-    Service: require('./src/Service'),
-    ServiceWrapper: require('./src/ServiceWrapper'),
+    Application,
 
-    JWT: JWT,
+    Plugin,
+    APIPlugin,
+    
+    Service,
+    ServiceWrapper,
 
-    Cache: Cache,
-    ExpirationCache: ExpirationCache,
-    DiskCache: DiskCache
+    JWT,
+    MessageEnvelope,
+
+    Cache,
+    ExpirationCache,
+    DiskCache
 };
