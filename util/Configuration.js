@@ -7,7 +7,7 @@ module.exports = class Configuration {
 
         let needCfg = true;
         try {
-            fs.accessSync(cfgPath, fs.F_OK | fs.R_OK | fs.W_OK);
+            fs.accessSync(cfgPath, fs.constants.F_OK | fs.constants.R_OK | fs.constants.W_OK);
             needCfg = false;
         } catch(e){}
 
