@@ -5,7 +5,8 @@ const EventEmitter = require('events'),
 const TokenHandler = require('./TokenHandler');
 const MessageEnvelope = require('./MessageEnvelope');
 
-const TOKEN = TokenHandler.TOKEN;
+const TOKEN = Symbol.for("TOKEN");
+const USER = Symbol.for("USER");
 const NEW_TOKEN = Symbol();
 
 // tokens are renewed if within 20 min of end
