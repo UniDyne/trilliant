@@ -3,7 +3,7 @@ const crypto = require('crypto');
 
 const { JWT } = require('../lib/JWT');
 
-const TOKEN = Symbol();
+const TOKEN = Symbol("TOKEN");
 const NEW_TOKEN = Symbol();
 
 
@@ -91,7 +91,7 @@ function save_secrets() {
 function renew_token(payload) {
     const secret = rotate_secret();
     payload.iss = secret;
-    
+
     return JWT.create(payload.sub, payload, secret.privateKey);
 }
 
