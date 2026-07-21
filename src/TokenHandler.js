@@ -1,5 +1,6 @@
 const path = require('path');
 const crypto = require('crypto');
+const fs = require('fs');
 
 const { JWT } = require('../lib/JWT');
 
