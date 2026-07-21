@@ -115,6 +115,8 @@ function validate_token(token) {
 
     if(!JWT.verify(token, SECRETS_DATA.get(payload.iss).publicKey))
         return false;
+
+    return true;
 }
 
 function read_token(token) {

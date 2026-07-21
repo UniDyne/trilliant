@@ -160,7 +160,7 @@ module.exports = class Plugin extends EventEmitter {
                 if(!TokenHandler.validate_token(args[TOKEN]))
                     return callback(MessageEnvelope.getErrorEnvelope(MessageEnvelope.MESG_NOLOGIN, "Invalid token."));
                 args[USER] = TokenHandler.read_token(args[TOKEN]);
-
+                
                 const ts = ((new Date()).getTime() / 1000) >> 0; // seconds as integer
                 if(args[USER].exp - ts < RENEWAL_WINDOW) {
                     args[TOKEN] = TokenHandler.renew_token(args[USER]);
@@ -169,7 +169,7 @@ module.exports = class Plugin extends EventEmitter {
             }
 
             if(descriptor.access) {
-                if(!args[USER]) return callback(MessageEnvelope.getErrorEnvelope(MESG_NOLOGIN));
+                if(!args[USER]) return callback(MessageEnvelope.getErrorEnvelope(MessageEnvelope.MESG_NOLOGIN));
 
                 if((args[USER].rights & descriptor.access) != descriptor.access)
                     return callback(MessageEnvelope.getErrorEnvelope(MESG_NOTAUTH));
