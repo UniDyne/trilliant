@@ -176,7 +176,7 @@ module.exports = class Plugin extends EventEmitter {
             }
             
             try {
-                return await callbackProxy(this, descriptor, args, callback);
+                return await this.callbackProxy(this, descriptor, args, callback);
             } catch(e) {
                 console.log(e);
                 return callback(MessageEnvelope.getErrorEnvelope(null, "An error occurred while processing the request."));
