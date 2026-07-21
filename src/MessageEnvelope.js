@@ -105,6 +105,8 @@ function setPagination(env, pages) {
 //#! flesh this out later
 function setToken(env, token) {
     env.token = token;
+    // compatibility
+    env.jwt = token;
 }
 
 function setState(env, state) {
