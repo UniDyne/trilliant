@@ -2,6 +2,15 @@ const EventEmitter = require('events'),
     fs = require('fs'),
     path = require('path');
 
+const TokenHandler = require('./TokenHandler');
+const MessageEnvelope = require('./MessageEnvelope');
+
+const TOKEN = TokenHandler.TOKEN;
+const NEW_TOKEN = Symbol();
+
+// tokens are renewed if within 20 min of end
+const RENEWAL_WINDOW = 20 * 60;
+
 let PlugDataMap = new WeakMap();
 
 function getSubclassDir() {
@@ -138,10 +147,86 @@ module.exports = class Plugin extends EventEmitter {
     // return a bound function for the event
     // override this to perform additional setups
     wrapEvent(descriptor, fn) {
-        return (function(args, callback) {
-            return fn.apply(this, [args, callback]);
+        return (async function(args, callback) {
+
+            // for backward compat
+            if(args.jwt) {
+                args[TOKEN] = args.jwt;
+                delete args.jwt;
+            }
+
+            if(args[TOKEN]) {
+                if(!TokenHandler.validate_token(args[TOKEN]))
+                    return callback(MessageEnvelope.getErrorEnvelope(MessageEnvelope.MESG_NOLOGIN, "Invalid token."));
+                args[USER] = TokenHandler.read_token(args[TOKEN]);
+
+                const ts = ((new Date()).getTime() / 1000) >> 0; // seconds as integer
+                if(args[USER].exp - ts < RENEWAL_WINDOW) {
+                    args[TOKEN] = TokenHandler.renew_token(args[USER]);
+                    args[NEW_TOKEN] = true;
+                }
+            }
+
+            if(descriptor.access) {
+                if(!args[USER]) return callback(MessageEnvelope.getErrorEnvelope(MESG_NOLOGIN));
+
+                if((args[USER].rights & descriptor.access) != descriptor.access)
+                    return callback(MessageEnvelope.getErrorEnvelope(MESG_NOTAUTH));
+            }
+            
+            try {
+                return await callbackProxy(this, descriptor, args, callback);
+            } catch(e) {
+                console.log(e);
+                return callback(MessageEnvelope.getErrorEnvelope(null, "An error occurred while processing the request."));
+            }
+            
         }).bind(this);
     }
+
+    /*
+        Proxy a function callback. This allows the returned data to be
+        coerced into a MessageEnvelope to provide a consistent protocol.
+        This also allows exceptions to be caught properly.
+    */
+    async callbackProxy(context, descriptor, args, callback) {
+        await descriptor.fn.call(context, args, (...x) => {
+            let result = x[0];
+            if(result == null) result = {};
+
+            let env;
+            // coerce to envelope
+            if(!result[MessageEnvelope.ENVELOPE]) {
+                // read common fields from result
+                let msgid = result['msgid'],
+                    msg = result['msg']??result['mesg'],
+                    data = result['data']??result['result'],
+                    success = result['success'],
+                    pages = result['pages'];
+                
+                // if result was not encapsulated
+                if(data == undefined && msg == undefined) data = result;
+
+                // if result had a success flag that was false, use error envelope
+                if(success != undefined && !success) env = MessageEnvelope.getErrorEnvelope(msgid, msg);
+
+                // Otherwise pack into normal envelope
+                else env = MessageEnvelope.getDataEnvelope(data, msgid, msg);
+
+                // second arg is pagination in older calls 
+                if(pages == undefined && x[1]) pages = x[1];
+
+                // set paginator
+                if(pages != undefined || descriptor.paginate)
+                    MessageEnvelope.setPagination(env, pages);
+            } else env = result; // already an envelope
+
+            if(args[NEW_TOKEN]) MessageEnvelope.setToken(env, args[TOKEN]);
+
+            return callback(env);
+        });
+    }
+
 
     // override this for additional filters
     // call super.getArgFilters() to get the defaults

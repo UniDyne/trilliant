@@ -21,7 +21,6 @@ const SESSION_TIMEOUT = 20 * 60; // 20 min
 
 
 module.exports.USER = USER;
-module.exports.MessageEnvelope = MessageEnvelope;
 
 
 // hack to get the directory of a subclass
@@ -94,6 +93,9 @@ async function callbackProxy(context, descriptor, args, callback) {
 // Extend base Plugin
 // this adds functionality for permission checks on event calls
 // also adds MessageEnvelope protocol
+/**
+ * @deprecated Most functionality is in standard Plugin now
+ */
 module.exports.APIPlugin = class APIPlugin extends Plugin {
     constructor(data) {
         // fix home directory if not specified

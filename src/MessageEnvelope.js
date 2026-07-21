@@ -80,7 +80,7 @@ function getDataEnvelope(data=null, msgid=0, msg='') {
     return env;
 }
 
-function getErrEnvelope(msgid=UNKNOWN_ERROR, msg) {
+function getErrorEnvelope(msgid=UNKNOWN_ERROR, msg) {
     if(MESSAGES.has(msgid)) msg = MESSAGES.get(msgid);
 
     const env = {
@@ -94,7 +94,7 @@ function getErrEnvelope(msgid=UNKNOWN_ERROR, msg) {
     return env;
 }
 
-function setEnvPagination(env, pages) {
+function setPagination(env, pages) {
     if(!pages) pages = {};
     if(!pages.count) pages.count = 20;
     if(!pages.num) pages.num = 1;
@@ -103,11 +103,11 @@ function setEnvPagination(env, pages) {
 }
 
 //#! flesh this out later
-function setEnvToken(env, token) {
-    env.jwt = token;
+function setToken(env, token) {
+    env.token = token;
 }
 
-function setEnvState(env, state) {
+function setState(env, state) {
     env.state = state;
 }
 
@@ -120,9 +120,9 @@ module.exports = {
     registerMessages,
 
     getDataEnvelope,
-    getErrEnvelope,
+    getErrorEnvelope,
 
-    setEnvPagination,
-    setEnvToken,
-    setEnvState
+    setPagination,
+    setToken,
+    setState
 };

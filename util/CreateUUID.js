@@ -1,9 +1,8 @@
 const hexDigits = "0123456789abcdef";
 
-/*
-    TODO: Change this implementation to use a secure random...
-*/
-
+/**
+ * @deprecated use crypto.randomUUID() instead 
+ */
 module.exports = function () {
     var s = [];
     for (var i = 0; i < 36; i++) {
