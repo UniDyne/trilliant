@@ -110,6 +110,8 @@ function validate_token(token) {
     const payload = JWT.read(token);
     const ts = ((new Date()).valueOf()/1000) >> 0;
 
+    if(payload == null) return false;
+    
     // check the fields before validating sig
     if(!payload.iss || !SECRETS_DATA.has(payload.iss))
         return false;
