@@ -86,6 +86,7 @@ function rotate_secret() {
 function save_secrets() {
     fs.writeFile(SECRETS_FILE, JSON.stringify(Object.fromEntries(SECRETS_DATA)), err => {
         console.log('Unable to save secrets file.');
+        console.log(err);
     });
 }
 
@@ -93,14 +94,14 @@ function renew_token(payload) {
     const secret = rotate_secret();
     payload.iss = secret;
 
-    return JWT.create(payload.sub, payload, secret.privateKey);
+    return JWT.create(payload.sub, payload, secret.private);
 }
 
 function create_token(username, payload) {
     const secret = rotate_secret();
     payload.iss = secret;
 
-    const token = JWT.create(username, payload, SECRETS_DATA.get(secret).privateKey);
+    const token = JWT.create(username, payload, SECRETS_DATA.get(secret).private);
     return token;
 }
 
@@ -113,7 +114,7 @@ function validate_token(token) {
     if(!payload.iss || !SECRETS_DATA.has(payload.iss))
         return false;
 
-    if(!JWT.verify(token, SECRETS_DATA.get(payload.iss).publicKey))
+    if(!JWT.verify(token, SECRETS_DATA.get(payload.iss).public))
         return false;
 
     return true;
