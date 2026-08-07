@@ -85,8 +85,10 @@ function rotate_secret() {
 // key saver
 function save_secrets() {
     fs.writeFile(SECRETS_FILE, JSON.stringify(Object.fromEntries(SECRETS_DATA)), err => {
-        console.log('Unable to save secrets file.');
-        console.log(err);
+        if(err) {
+            console.log('Unable to save secrets file.');
+            console.log(err);
+        }
     });
 }
 
