@@ -11,6 +11,8 @@ const TokenHandler = require('./src/TokenHandler');
 
 const Service = require('./src/Service');
 const ServiceWrapper = require('./src/ServiceWrapper');
+const DatabaseService = require('./src/DatabaseService');
+const QueryUtils = require('./lib/QueryUtils');
 
 module.exports = {
     Application,
@@ -20,6 +22,9 @@ module.exports = {
     
     Service,
     ServiceWrapper,
+
+    DatabaseService,
+    QueryUtils,
 
     JWT,
     MessageEnvelope,
