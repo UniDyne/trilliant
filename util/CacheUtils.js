@@ -1,4 +1,4 @@
-
+const crypto = require('crypto');
 
 
 // utility method to consistetly produce the same JSON structures
