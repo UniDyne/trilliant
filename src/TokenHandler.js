@@ -10,6 +10,7 @@ const NEW_TOKEN = Symbol();
 
 const SESSION_EXPIRATION_HOURS = 8;
 const SESSION_EXPIRATION_MS = SESSION_EXPIRATION_HOURS * 60 *  60 * 1000;
+const STALE_KEY_MS = SESSION_EXPIRATION_HOURS * 30 * 60 * 1000; // half session
 const SECRETS_FILE = path.join(path.dirname(require.main.filename), 'etc/token_secrets.json');
 
 const SECRETS = [];
@@ -70,13 +71,13 @@ function rotate_secret() {
         return false;
     }));
 
-    const secret = SECRETS.reduce( (p,c,i) => {
+    const secret = SECRETS.reduce( (p,c) => {
         if(p == null) return c;
-        if(c.end > p.end) return c;
+        if(SECRETS_DATA.get(c).end > SECRETS_DATA.get(p).end) return c;
         return p;
     }, null);
 
-    if(secret != null)
+    if(secret != null && SECRETS_DATA.get(secret).end > ts+STALE_KEY_MS)
         return secret;
 
     return create_secret();
@@ -96,7 +97,7 @@ function renew_token(payload) {
     const secret = rotate_secret();
     payload.iss = secret;
 
-    return JWT.create(payload.sub, payload, secret.private);
+    return JWT.create(payload.sub, payload, SECRETS_DATA.get(secret).private);
 }
 
 function create_token(username, payload) {
