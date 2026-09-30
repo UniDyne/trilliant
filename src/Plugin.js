@@ -61,7 +61,7 @@ function paginationResultFilter(descriptor, args) {
     // expecting first arg to be list of records
     // second arg should be pagination object
 
-    if(args.length > 1 && typeof args[1] == 'object' && typeof args[0] == 'array') {
+    if(args.length > 1 && typeof args[1] == 'object' && Array.isArray(args[0])) {
         // copy total to pagination object
         args[1].total = args[0].length > 0 ? args[0].page_total : 0;
         

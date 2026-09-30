@@ -23,10 +23,10 @@ const MESSAGES = new Map([
 ]);
 
 function registerMessages(msgList) {
-    if(typeof msgList == 'object' && msgList.constructor.name == 'Map')
-        return registerMsgMap(msgList);
-    else if(typeof msgList == 'array')
+    if(Array.isArray(msgList))
         return registerMsgArr(msgList);
+    else if(typeof msgList == 'object' && msgList.constructor.name == 'Map')
+        return registerMsgMap(msgList);
     else throw TypeError();
 }
 
@@ -41,21 +41,16 @@ function registerMsgArr(msgList) {
     for(let i = 0, L = msgList.length; i < L; i++) {
         let m = msgList[i];
 
-        switch(typeof m) {
-            case 'array':
-                if(m.length != 2) throw TypeError("Invalid message kv array.");
-                if(MESSAGES.has(m[0])) throw Error("Duplicate message ID.");
-                MESSAGES.set(m[0], m[1]);
-                break;
-            case 'object':
-                if(m.hasOwnProperty('id') && m.hasOwnProperty('msg')) {
-                    if(MESSAGES.has(m['id'])) throw Error("Duplicate message ID.");
-                    MESSAGES.set(m['id'], m['msg']);
-                } else throw TypeError("Invalid message kv object.");
-                break;
-            default:
-                throw TypeError();
-        }
+        if(Array.isArray(m)) {
+            if(m.length != 2) throw TypeError("Invalid message kv array.");
+            if(MESSAGES.has(m[0])) throw Error("Duplicate message ID.");
+            MESSAGES.set(m[0], m[1]);
+        } else if(typeof m == 'object') {
+            if(m.hasOwnProperty('id') && m.hasOwnProperty('msg')) {
+                if(MESSAGES.has(m['id'])) throw Error("Duplicate message ID.");
+                MESSAGES.set(m['id'], m['msg']);
+            } else throw TypeError("Invalid message kv object.");
+        } else throw TypeError();
     }
 }
 
@@ -81,7 +76,7 @@ function getDataEnvelope(data=null, msgid=0, msg='') {
 }
 
 function getErrorEnvelope(msgid=UNKNOWN_ERROR, msg) {
-    if(MESSAGES.has(msgid)) msg = MESSAGES.get(msgid);
+    if((msg == null || msg == '') && MESSAGES.has(msgid)) msg = MESSAGES.get(msgid);
 
     const env = {
         success: false,
