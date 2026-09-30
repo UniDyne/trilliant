@@ -56,10 +56,8 @@ module.exports = class PlugManager {
             } catch(e) {
                 Logging.error(`Could not load plugin: ${files[i]}`, e);
             }
-
-            this.App.Config.save();
         }
-
+        this.App.Config.save();
     }
 
     init() {

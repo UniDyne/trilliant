@@ -1,5 +1,6 @@
 const fs = require("fs"),
     path = require("path"),
+    cluster = require("cluster"),
     process = require("process");
 
 
@@ -28,11 +29,63 @@ function mkDateCode(wtime) {
 }
 
 
-// need to create a log file
+// Log file: log/<script>_<yyyymmdd>.log under the working directory.
+// One append stream is held open and reused, and replaced when the date rolls over.
+//
+// Processes that are children (cluster workers or forked processes) each
+// write to their own file, log/<script>_<yyyymmdd>_<pid>.log, so workers
+// never interleave writes to one file.
+let current = null; // { stream, code }
+
+function isChildProcess() {
+    return cluster.isWorker || typeof process.send === 'function';
+}
+
+function openLog(code) {
+    const dir = path.join(process.cwd(), 'log');
+    fs.mkdirSync(dir, { recursive: true });
+
+    const script = process.argv[1] ? path.basename(process.argv[1], '.js') : 'trilliant';
+    const suffix = isChildProcess() ? `_${process.pid}` : '';
+    const stream = fs.createWriteStream(path.join(dir, `${script}_${code}${suffix}.log`), { flags: 'a' });
+
+    // a logging failure must never take the process down (or recurse: the
+    // debug hook logs uncaught errors); drop the stream and reopen on the next line
+    stream.on('error', err => {
+        console.error(`Unable to write log: ${err.message}`);
+        if(current && current.stream === stream) current = null;
+    });
+
+    return { stream, code };
+}
+
+function getLogStream() {
+    const code = mkDateCode(false);
+
+    if(current && current.code !== code) {
+        current.stream.end();
+        current = null;
+    }
+    if(!current) current = openLog(code);
+
+    return current.stream;
+}
+
+/**
+ * Flush and close the log. Call before process.exit(); lines written
+ * but not yet flushed are otherwise lost. The next log call reopens it.
+ * @returns {Promise<void>}
+ */
+function closeLog() {
+    return new Promise(resolve => {
+        if(!current) return resolve();
+        const { stream } = current;
+        current = null;
+        stream.end(resolve);
+    });
+}
+
 // timestamp / module / level / message / data
-// THIS IS NOT SAFE FOR CLUSTER OR FORK
-// add functionality to use a PID?
-// hook process exit to close the file?
 function logToFile(level, message, data) {
     const logData = [
         new Date().toISOString(),
@@ -42,14 +95,8 @@ function logToFile(level, message, data) {
         JSON.stringify(data, replaceErrors)
     ];
 
-    try { fs.mkdirSync(path.join(process.cwd(), 'log')); } catch(e) {}
-
-    const logFile = path.join(process.cwd(), 'log', `${path.basename(process.argv[1], '.js')}_${mkDateCode(false)}.log`);
-
-    // append
-    const out = fs.createWriteStream(logFile, {flags:'a+'});
-    out.write(`${logData.join('\t')}\n`);
-    out.close();
+    try { getLogStream().write(`${logData.join('\t')}\n`); }
+    catch(e) { console.error(`Unable to write log: ${e.message}`); }
 }
 
 function replaceErrors(k, v) {
@@ -124,6 +171,8 @@ module.exports = {
         logToFile('DEBUG', message, data);
     },
         
+    close: closeLog,
+
     activateDebugHook: activateDebugHook,
     dumpActiveHandles: dumpActiveHandles,
     dumpActiveRequests: dumpActiveRequests
